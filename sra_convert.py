@@ -28,7 +28,7 @@ def _parse_cmdl(cmdl):
 
 	parser.add_argument(
 			"-m", "--mode", choices=[CONVERT, DELETE_SRA, DELETE_BAM], default=CONVERT,
-			help="Subcommand action to be performed")
+			help="Main action to be performed for each input file; e.g. SRA-to-BAM conversion, SRA removal, or BAM removal")
 
 	parser.add_argument(REMOVAL_OPTNAME, action="store_true", help="Once converted, remove original file.")
 
