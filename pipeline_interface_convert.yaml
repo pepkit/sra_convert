@@ -5,9 +5,9 @@ pipelines:
   convert:
     name: convert
     path: sra_convert.py
-    required_input_files: data_source
+    # required_input_files: SRR_files
     arguments:
-      "--srr": data_source
+      "--srr": SRR_files
     resources:
       default:
         file_size: "0"
