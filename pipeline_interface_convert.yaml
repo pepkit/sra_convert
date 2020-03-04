@@ -8,6 +8,8 @@ pipelines:
     # required_input_files: SRR_files
     arguments:
       "--srr": SRR_files
+    command_template: >
+      {pipeline.path} --srr {sample.SRR_files}
     resources:
       default:
         file_size: "0"
