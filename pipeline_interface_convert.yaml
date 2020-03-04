@@ -10,6 +10,8 @@ pipelines:
       "--srr": SRR_files
     command_template: >
       {pipeline.path} --srr {sample.SRR_files}
+    compute:
+      bulker_crate: databio/sra_convert
     resources:
       default:
         file_size: "0"
