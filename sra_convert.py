@@ -41,8 +41,7 @@ def _parse_cmdl(cmdl):
             "--keep-sra", action='store_true', default=False,
             help="On convert mode, keep original sra data?")
 
-    parser.add_argument(
-            "-r", "--srr", required=True, nargs="+",
+    parser.add_argument( "-r", "--srr", required=True, nargs="+",
             help="SRR files")
 
     parser = pypiper.add_pypiper_args(parser, groups=["config", "logmuse"],
@@ -56,8 +55,8 @@ def safe_echo(var):
     return os.getenv(var, "")
 
 if __name__ == "__main__":
-    cmdl = sys.argv[1:]
-    args = _parse_cmdl(cmdl)
+    args = _parse_cmdl(sys.argv[1:])
+
     global _LOGGER
     _LOGGER = logmuse.logger_via_cli(args)
 
@@ -68,9 +67,7 @@ if __name__ == "__main__":
     else:
         outfolder = os.path.join(args.srafolder, "sra_convert_pipeline")
 
-    pm = pypiper.PipelineManager(   name="sra_convert",
-                                    outfolder=outfolder,
-                                    args=args)
+    pm = pypiper.PipelineManager(name="sra_convert", outfolder=outfolder, args=args)
 
     nfiles = len(args.srr)
     failed_files = []
@@ -79,11 +76,11 @@ if __name__ == "__main__":
         srr_acc = os.path.splitext(os.path.basename(args.srr[i]))[0]
         pm.info("Processing {} of {} files: {}".format(str(i+1), str(nfiles), srr_acc))
         infile = args.srr[i]
-        if (not os.path.isfile(infile)):
+        if not os.path.isfile(infile):
             pm.debug("Couldn't find sra file at: {}.".format(infile))
             infile = os.path.join(args.srafolder, args.srr[i] + ".sra")
             srr_acc = args.srr[i]
-        if (not os.path.isfile(infile)):
+        if not os.path.isfile(infile):
             pm.warning("Couldn't find sra file at: {}. Next...".format(infile))
             if args.mode == "convert":
                 failed_files.append(infile)
