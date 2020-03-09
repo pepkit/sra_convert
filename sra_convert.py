@@ -86,28 +86,32 @@ if __name__ == "__main__":
 
         if args.mode == "convert":
             infile = args.srr[i]
+
             if not os.path.isfile(infile):
                 pm.warning("Couldn't find sra file at: {}.".format(infile))
                 infile = os.path.join(args.srafolder, args.srr[i] + ".sra")
                 srr_acc = args.srr[i]
             if not os.path.isfile(infile):
                 pm.warning("Couldn't find sra file at: {}. Next...".format(infile))
-                failed_files.append(infile)
-                # If it's a delete mode, we don't need that file...
-                continue
+                # If it's in delete mode, we don't need that file...
+                failed_files.append(args.srr[i])
+                # continue
             if args.format == 'fastq':
                 outfile = "{fq_prefix}_X.fq".format(fq_prefix=fq_prefix)
                 cmd = "fastq-dump {data_source} --split-spot --gzip -O {outfolder}".format(
-                    data_source=infile, outfolder=args.fqfolder)
+                    data_source=infile, outfolder=args.fqfolder, nofail=True)
             elif args.format == 'bam':
                 outfile = os.path.join(args.bamfolder, args.srr[i] + ".bam")
                 cmd = "sam-dump -u {data_source} | samtools view -bS - > {outfile}".format(
-                    data_source=infile, outfile=outfile)
+                    data_source=infile, outfile=outfile, nofail=True)
             else:
                 raise KeyError("Unknown format: {}".format(args.format))
 
             target = outfile
-            pm.run(cmd, target=target)
+            ret = pm.run(cmd, target=target)
+            if ret == 0:
+                failed_files.remove(infile)
+
         elif args.mode == "delete_bam":
             pm.timestamp("Deleting bam file")
             pm.clean_add(bamfile)
