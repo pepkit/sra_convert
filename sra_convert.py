@@ -86,18 +86,11 @@ if __name__ == "__main__":
 
         if args.mode == "convert":
             infile = args.srr[i]
-
             if not os.path.isfile(infile):
                 pm.warning("Couldn't find sra file at: {}.".format(infile))
-                infile = os.path.join(args.srafolder, args.srr[i] + ".sra")
-                srr_acc = args.srr[i]
-            if not os.path.isfile(infile):
-                pm.warning("Couldn't find sra file at: {}. Next...".format(infile))
-                # If it's in delete mode, we don't need that file...
                 failed_files.append(args.srr[i])
-                # continue
             if args.format == 'fastq':
-                outfile = "{fq_prefix}_X.fq".format(fq_prefix=fq_prefix)
+                outfile = "{fq_prefix}.fastq.gz".format(fq_prefix=fq_prefix)
                 cmd = "fastq-dump {data_source} --split-spot --gzip -O {outfolder}".format(
                     data_source=infile, outfolder=args.fqfolder, nofail=True)
             elif args.format == 'bam':
@@ -110,30 +103,21 @@ if __name__ == "__main__":
             target = outfile
             ret = pm.run(cmd, target=target)
             if ret == 0:
+                print(failed_files, infile)
+
                 failed_files.remove(infile)
 
         elif args.mode == "delete_bam":
             pm.timestamp("Deleting bam file")
             pm.clean_add(bamfile)
-            # cmd = "rm {data_source}".format(data_source=bamfile)
-            # target = "rm_" + srr_acc
-            # pm.run(cmd, target=target, nofail=True)
         elif args.mode == "delete_fq":
             pm.timestamp("Deleting fastq file")
             fq_prefix = os.path.join(args.fqfolder, srr_acc)
             pm.clean_add("{fq_prefix}.fastq.gz".format(fq_prefix=fq_prefix))
             pm.clean_add("{fq_prefix}_[0-9].fastq.gz".format(fq_prefix=fq_prefix))
-            # cmd = "rm {fq_prefix}.fastq.gz".format(fq_prefix=fq_prefix)
-            # target = "rm_" + srr_acc
-            # pm.run(cmd, target=target, nofail=True)
-
         if delete_sra:
             pm.timestamp("Deleting sra file")
             pm.clean_add(infile)
-            # cmd = "rm {data_source}".format(data_source=infile)
-            # target = "rm_" + srr_acc
-            # pm.run(cmd, target=target, nofail=True)
-
 
     if len(failed_files) > 0:
         pm.fail_pipeline(Exception("Unable to locate the following files: {}".format(",".join(failed_files))))
