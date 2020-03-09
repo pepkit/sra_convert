@@ -104,8 +104,10 @@ if __name__ == "__main__":
             ret = pm.run(cmd, target=target)
             if ret == 0:
                 print(failed_files, infile)
-
-                failed_files.remove(infile)
+                try:
+                    failed_files.remove(infile)
+                except:
+                    pass
 
         elif args.mode == "delete_bam":
             pm.timestamp("Deleting bam file")
