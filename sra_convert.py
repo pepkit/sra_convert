@@ -6,7 +6,7 @@ import pypiper
 import logmuse
 import sys
 
-
+__version__ = "0.1.0"
 
 def _parse_cmdl(cmdl):
     parser = ArgumentParser(description="Automatic SRA data converter")
@@ -75,17 +75,6 @@ if __name__ == "__main__":
     for i in range(nfiles):
         srr_acc = os.path.splitext(os.path.basename(args.srr[i]))[0]
         pm.info("Processing {} of {} files: {}".format(str(i+1), str(nfiles), srr_acc))
-        infile = args.srr[i]
-        if not os.path.isfile(infile):
-            pm.debug("Couldn't find sra file at: {}.".format(infile))
-            infile = os.path.join(args.srafolder, args.srr[i] + ".sra")
-            srr_acc = args.srr[i]
-        if not os.path.isfile(infile):
-            pm.warning("Couldn't find sra file at: {}. Next...".format(infile))
-            if args.mode == "convert":
-                failed_files.append(infile)
-                # If it's a delete mode, we don't need that file...
-                continue
 
         bamfile = os.path.join(args.bamfolder, srr_acc + ".bam")
         fq_prefix = os.path.join(args.fqfolder, srr_acc)
@@ -96,6 +85,16 @@ if __name__ == "__main__":
             delete_sra = False
 
         if args.mode == "convert":
+            infile = args.srr[i]
+            if not os.path.isfile(infile):
+                pm.warning("Couldn't find sra file at: {}.".format(infile))
+                infile = os.path.join(args.srafolder, args.srr[i] + ".sra")
+                srr_acc = args.srr[i]
+            if not os.path.isfile(infile):
+                pm.warning("Couldn't find sra file at: {}. Next...".format(infile))
+                failed_files.append(infile)
+                # If it's a delete mode, we don't need that file...
+                continue
             if args.format == 'fastq':
                 outfile = "{fq_prefix}_X.fq".format(fq_prefix=fq_prefix)
                 cmd = "fastq-dump {data_source} --split-spot --gzip -O {outfolder}".format(
