@@ -90,11 +90,10 @@ if __name__ == "__main__":
                 pm.warning("Couldn't find sra file at: {}.".format(infile))
                 failed_files.append(args.srr[i])
             if args.format == 'fastq':
-                # we don't know exactly what the outfile will be here, so 
-                # we can't really use pypiper; because it can be SRR*.fastq.gz
-                # for single, end but SRR*_1.fastq.gz and SRR*_2.fastq.gz for paired
-                outfile = "{fq_prefix}_X.fastq.gz".format(fq_prefix=fq_prefix)
-                cmd = "fastq-dump {data_source} --split-spot --gzip -O {outfolder}".format(
+                # fastq-dump --split-files will produce *_1.fastq and *_2.fastq
+                # for paired-end data, and only *_1.fastq for single-end data.
+                outfile = "{fq_prefix}_1.fastq.gz".format(fq_prefix=fq_prefix)
+                cmd = "fastq-dump {data_source} --split-files --gzip -O {outfolder}".format(
                     data_source=infile, outfolder=args.fqfolder, nofail=True)
             elif args.format == 'bam':
                 outfile = os.path.join(args.bamfolder, args.srr[i] + ".bam")
