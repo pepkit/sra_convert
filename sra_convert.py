@@ -90,7 +90,10 @@ if __name__ == "__main__":
                 pm.warning("Couldn't find sra file at: {}.".format(infile))
                 failed_files.append(args.srr[i])
             if args.format == 'fastq':
-                outfile = "{fq_prefix}.fastq.gz".format(fq_prefix=fq_prefix)
+                # we don't know exactly what the outfile will be here, so 
+                # we can't really use pypiper; because it can be SRR*.fastq.gz
+                # for single, end but SRR*_1.fastq.gz and SRR*_2.fastq.gz for paired
+                outfile = "{fq_prefix}_X.fastq.gz".format(fq_prefix=fq_prefix)
                 cmd = "fastq-dump {data_source} --split-spot --gzip -O {outfolder}".format(
                     data_source=infile, outfolder=args.fqfolder, nofail=True)
             elif args.format == 'bam':
@@ -103,22 +106,22 @@ if __name__ == "__main__":
             target = outfile
             ret = pm.run(cmd, target=target)
             if ret == 0:
-                print(failed_files, infile)
+                pm.info("Already completed files: {}" failed_files)
                 try:
                     failed_files.remove(infile)
                 except:
                     pass
 
         elif args.mode == "delete_bam":
-            pm.timestamp("Deleting bam file")
+            pm.timestamp("Cleaning bam file: {}".format(bamfile))
             pm.clean_add(bamfile)
         elif args.mode == "delete_fq":
-            pm.timestamp("Deleting fastq file")
+            pm.timestamp("Cleaning fastq file(s): {}*".format(fq_prefix))
             fq_prefix = os.path.join(args.fqfolder, srr_acc)
             pm.clean_add("{fq_prefix}.fastq.gz".format(fq_prefix=fq_prefix))
             pm.clean_add("{fq_prefix}_[0-9].fastq.gz".format(fq_prefix=fq_prefix))
         if delete_sra:
-            pm.timestamp("Deleting sra file")
+            pm.timestamp("Cleaning sra file: {}".format(infile))
             pm.clean_add(infile)
 
     if len(failed_files) > 0:
