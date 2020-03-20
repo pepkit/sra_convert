@@ -92,10 +92,11 @@ if __name__ == "__main__":
     else:
         outfolder = os.path.join(args.srafolder, "sra_convert_pipeline", run_name)
 
+    _LOGGER.info("Using outfolder: {}".format(outfolder))
     nfiles = len(args.srr)
     failed_files = []
 
-    pm = pypiper.PipelineManager(name=run_name, outfolder=outfolder, args=args)
+    pm = pypiper.PipelineManager(name="sra_convert", outfolder=outfolder, args=args)
 
     for i in range(nfiles):
         srr_acc = os.path.splitext(os.path.basename(args.srr[i]))[0]
