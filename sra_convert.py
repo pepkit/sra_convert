@@ -60,26 +60,24 @@ if __name__ == "__main__":
     global _LOGGER
     _LOGGER = logmuse.logger_via_cli(args)
 
-    key=args.srr[0]
-
-    if args.output_parent:
-        outfolder = args.output_parent
-    else:
-        outfolder = os.path.join(args.srafolder, "sra_convert_pipeline")
-
-
-    nfiles = len(args.srr)
-    failed_files = []
-
     # Name the pipeline run after the first element to convert.
     # Maybe we should just have a separate pipeline for each file?
 
     primary_srr_acc = os.path.splitext(os.path.basename(args.srr[0]))[0]
     run_name = "sra_convert_" + primary_srr_acc
-    pm = pypiper.PipelineManager(name=run_name, outfolder=outfolder, args=args)
+    
+    if args.output_parent:
+        outfolder = os.path.join(args.output_parent, primary_srr_acc)
+    else:
+        outfolder = os.path.join(args.srafolder, "sra_convert_pipeline", primary_srr_acc)
+
+    nfiles = len(args.srr)
+    failed_files = []
 
     for i in range(nfiles):
         srr_acc = os.path.splitext(os.path.basename(args.srr[i]))[0]
+        run_name = srr_acc
+        pm = pypiper.PipelineManager(name=run_name, outfolder=outfolder, args=args)
         pm.info("Processing {} of {} files: {}".format(str(i+1), str(nfiles), srr_acc))
 
         bamfile = os.path.join(args.bamfolder, srr_acc + ".bam")
@@ -129,7 +127,8 @@ if __name__ == "__main__":
             pm.timestamp("Cleaning sra file: {}".format(infile))
             pm.clean_add(infile)
 
-    if len(failed_files) > 0:
-        pm.fail_pipeline(Exception("Unable to locate the following files: {}".format(",".join(failed_files))))
+        if len(failed_files) > 0:
+            pm.fail_pipeline(Exception("Unable to locate the following files: {}".format(",".join(failed_files))))
+        pm.stop_pipeline()
 
-    pm.stop_pipeline()
+
