@@ -44,15 +44,33 @@ def _parse_cmdl(cmdl):
     parser.add_argument( "-r", "--srr", required=True, nargs="+",
             help="SRR files")
 
+    parser.add_argument("-S", "--sample-name", required=False, nargs="+",
+            help="Name for sample to run",
+            metavar="SAMPLE_NAME",)
+
     parser = pypiper.add_pypiper_args(parser, groups=["config", "logmuse"],
-        args=["output-parent", "sample-name", "recover"])
+        args=["output-parent", "recover"])
 
 
     return parser.parse_args(cmdl)
 
+
 def safe_echo(var):
     """ Returns an environment variable if it exists, or an empty string if not"""
     return os.getenv(var, "")
+
+
+def uniqify(seq):  # Dave Kirby
+    """
+    Return only unique items in a sequence, preserving order
+
+    :param list seq: List of items to uniqify
+    :return list[object]: Original list with duplicates removed
+    """
+    # Order preserving
+    seen = set()
+    return [x for x in seq if x not in seen and not seen.add(x)]
+
 
 if __name__ == "__main__":
     args = _parse_cmdl(sys.argv[1:])
@@ -64,7 +82,7 @@ if __name__ == "__main__":
     # Maybe we should just have a separate pipeline for each file?
 
     if args.sample_name:
-        run_name = sample_name
+        run_name = "_".join(uniqify(args.sample_name))
     else:
         primary_srr_acc = os.path.splitext(os.path.basename(args.srr[0]))[0]
         run_name = primary_srr_acc
@@ -74,10 +92,11 @@ if __name__ == "__main__":
     else:
         outfolder = os.path.join(args.srafolder, "sra_convert_pipeline", run_name)
 
+    _LOGGER.info("Using outfolder: {}".format(outfolder))
     nfiles = len(args.srr)
     failed_files = []
 
-    pm = pypiper.PipelineManager(name=run_name, outfolder=outfolder, args=args)
+    pm = pypiper.PipelineManager(name="sra_convert", outfolder=outfolder, args=args)
 
     for i in range(nfiles):
         srr_acc = os.path.splitext(os.path.basename(args.srr[i]))[0]
