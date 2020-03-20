@@ -105,7 +105,7 @@ if __name__ == "__main__":
             target = outfile
             ret = pm.run(cmd, target=target)
             if ret == 0:
-                pm.info("Already completed files: {}" failed_files)
+                pm.info("Already completed files: {}".format(failed_files))
                 try:
                     failed_files.remove(infile)
                 except:
