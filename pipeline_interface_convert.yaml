@@ -5,6 +5,7 @@ pipelines:
   convert:
     name: convert
     path: sra_convert.py
+    schema: sra_convert.yaml
     # required_input_files: SRR_files
     arguments:
       "--srr": SRR_files
