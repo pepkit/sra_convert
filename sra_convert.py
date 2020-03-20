@@ -45,7 +45,7 @@ def _parse_cmdl(cmdl):
             help="SRR files")
 
     parser = pypiper.add_pypiper_args(parser, groups=["config", "logmuse"],
-        args=["output-parent", "recover"])
+        args=["output-parent", "sample-name", "recover"])
 
 
     return parser.parse_args(cmdl)
@@ -63,21 +63,24 @@ if __name__ == "__main__":
     # Name the pipeline run after the first element to convert.
     # Maybe we should just have a separate pipeline for each file?
 
-    primary_srr_acc = os.path.splitext(os.path.basename(args.srr[0]))[0]
-    run_name = "sra_convert_" + primary_srr_acc
+    if args.sample_name:
+        run_name = sample_name
+    else:
+        primary_srr_acc = os.path.splitext(os.path.basename(args.srr[0]))[0]
+        run_name = primary_srr_acc
     
     if args.output_parent:
-        outfolder = os.path.join(args.output_parent, primary_srr_acc)
+        outfolder = os.path.join(args.output_parent, run_name)
     else:
-        outfolder = os.path.join(args.srafolder, "sra_convert_pipeline", primary_srr_acc)
+        outfolder = os.path.join(args.srafolder, "sra_convert_pipeline", run_name)
 
     nfiles = len(args.srr)
     failed_files = []
 
+    pm = pypiper.PipelineManager(name=run_name, outfolder=outfolder, args=args)
+
     for i in range(nfiles):
         srr_acc = os.path.splitext(os.path.basename(args.srr[i]))[0]
-        run_name = srr_acc
-        pm = pypiper.PipelineManager(name=run_name, outfolder=outfolder, args=args)
         pm.info("Processing {} of {} files: {}".format(str(i+1), str(nfiles), srr_acc))
 
         bamfile = os.path.join(args.bamfolder, srr_acc + ".bam")
@@ -127,8 +130,7 @@ if __name__ == "__main__":
             pm.timestamp("Cleaning sra file: {}".format(infile))
             pm.clean_add(infile)
 
-        if len(failed_files) > 0:
-            pm.fail_pipeline(Exception("Unable to locate the following files: {}".format(",".join(failed_files))))
-        pm.stop_pipeline()
+    if len(failed_files) > 0:
+        pm.fail_pipeline(Exception("Unable to locate the following files: {}".format(",".join(failed_files))))
 
-
+    pm.stop_pipeline()
