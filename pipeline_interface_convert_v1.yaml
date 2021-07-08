@@ -1,0 +1,18 @@
+protocol_mapping:
+  "*": convert
+
+pipelines:
+  convert:
+    name: convert
+    path: sra_convert.py
+    schema: sra_convert.yaml
+    # required_input_files: SRR_files
+    arguments:
+      "--srr": SRR_files
+    command_template: >
+      {pipeline.path} --srr {sample.SRR_files}
+      {% if sample.SRX is defined %} --sample-name {sample.SRX} {% endif %}
+      -O {looper.output_folder}
+    compute:
+      bulker_crate: databio/sra_convert
+      size_dependent_variables: resources.tsv
